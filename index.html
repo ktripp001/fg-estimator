@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FG Property Services — Instant Moving Quote</title>
+  <style>
+    :root{
+      --fg:#0b6b6f; --fg2:#0e8287; --ink:#1f2937; --muted:#6b7280; --bg:#f8fafc; --card:#ffffff;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:var(--bg); color:var(--ink);}
+    .wrap{max-width:960px;margin:24px auto;padding:16px;}
+    .card{background:var(--card); border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.06); padding:24px;}
+    h1{margin:.2rem 0 1rem; font-size:1.6rem;}
+    h2{margin:1.2rem 0 .6rem; font-size:1.2rem; color:var(--fg);}
+    label{display:block; font-weight:600; margin:.4rem 0 .25rem;}
+    input, select, textarea{width:100%; padding:.7rem .8rem; border:1px solid #e5e7eb; border-radius:10px; background:#fff; font-size:1rem;}
+    .row{display:grid; gap:12px; grid-template-columns:1fr;}
+    @media(min-width:720px){ .row{grid-template-columns: repeat(2, 1fr);} }
+    .help{font-size:.9rem; color:var(--muted);}
+    .btn{background:var(--fg); color:#fff; border:none; padding:.85rem 1rem; border-radius:999px; font-weight:700; cursor:pointer;}
+    .btn.secondary{background:#fff; color:var(--fg); border:2px solid var(--fg);}
+    .btn:disabled{opacity:.5; cursor:not-allowed;}
+    .actions{display:flex; gap:12px; align-items:center; flex-wrap:wrap;}
+    .pill{display:inline-block; padding:.15rem .55rem; border-radius:999px; background:#eef2ff; color:#3730a3; font-size:.8rem; font-weight:700;}
+    .grid-3{display:grid; gap:12px; grid-template-columns:1fr;}
+    @media(min-width:960px){ .grid-3{ grid-template-columns: repeat(3, 1fr);} }
+    .est{background:#f0fdf4; border:1px dashed #bbf7d0; padding:16px; border-radius:12px;}
+    .muted{color:var(--muted);}
+    .divider{height:1px; background:#e5e7eb; margin:16px 0;}
+    .badge{background:#ecfeff;color:#164e63;border:1px solid #a5f3fc;padding:.2rem .5rem;border-radius:999px;font-size:.75rem;font-weight:700;}
+    .error{color:#b91c1c;font-weight:600;font-size:.95rem; display:none;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Instant Quote — Moving & Furniture Assembly</h1>
+      <div class="muted">Enter your ZIP and job details to get an instant estimate range. For an exact quote, submit the form and our team will confirm in minutes.</div>
+      <div class="divider"></div>
+
+      <form id="quoteForm" onsubmit="submitQuote(event)">
+        <h2>Contact & Location</h2>
+        <div class="row">
+          <div>
+            <label for="name">Full Name</label>
+            <input id="name" name="name" required placeholder="Jane Doe" />
+          </div>
+          <div>
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required placeholder="jane@example.com" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="phone">Phone</label>
+            <input id="phone" name="phone" required placeholder="(555) 555‑5555" />
+          </div>
+          <div>
+            <label for="zip">ZIP Code</label>
+            <input id="zip" name="zip" inputmode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" required placeholder="91101" />
+            <div class="help">Enter 5‑digit or ZIP+4 (e.g., 91101 or 91101-1234).</div>
+          </div>
+        </div>
+
+        <h2>Service Type</h2>
+        <div class="row">
+          <div>
+            <label for="serviceType">Choose a service</label>
+            <select id="serviceType" name="serviceType" required onchange="toggleServiceFields()">
+              <option value="">Select…</option>
+              <option value="full">Full-Service Move (pack, load, drive, unload)</option>
+              <option value="packing">Packing Only</option>
+              <option value="labor">Labor Only (load/unload, no truck)</option>
+              <option value="assembly">Furniture Assembly</option>
+            </select>
+          </div>
+          <div>
+            <label for="moveDate">Preferred Date</label>
+            <input id="moveDate" name="moveDate" type="date" required />
+          </div>
+        </div>
+
+        <div id="fullFields" style="display:none;">
+          <h2>Move Details</h2>
+          <div class="grid-3">
+            <div>
+              <label for="homeSize">Home Size</label>
+              <select id="homeSize" name="homeSize">
+                <option value="studio">Studio</option>
+                <option value="1br">1 Bedroom</option>
+                <option value="2br">2 Bedrooms</option>
+                <option value="3br">3 Bedrooms</option>
+                <option value="4br">4 Bedrooms</option>
+                <option value="5br">5+ Bedrooms</option>
+              </select>
+            </div>
+            <div>
+              <label for="distance">Distance (miles)</label>
+              <input id="distance" name="distance" type="number" min="0" step="1" value="5"/>
+              <div class="help">Local moves under ~30 miles are priced hourly; longer may add a travel fee.</div>
+            </div>
+            <div>
+              <label for="stairs">Flights of Stairs</label>
+              <select id="stairs" name="stairs">
+                <option value="0">None / Elevator</option>
+                <option value="1">1 flight</option>
+                <option value="2">2+ flights</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="fragile">Fragile / specialty items?</label>
+              <select id="fragile" name="fragile">
+                <option value="none">None</option>
+                <option value="some">Some (china, TV & glass)</option>
+                <option value="many">Many / specialty (piano, safe)</option>
+              </select>
+            </div>
+            <div>
+              <label for="includePacking">Include Packing?</label>
+              <select id="includePacking" name="includePacking">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="packingFields" style="display:none;">
+          <h2>Packing Details</h2>
+          <div class="grid-3">
+            <div>
+              <label for="packingRooms">Rooms to Pack</label>
+              <input id="packingRooms" name="packingRooms" type="number" min="1" value="1"/>
+            </div>
+            <div>
+              <label for="packingFragile">Fragile Items?</label>
+              <select id="packingFragile" name="packingFragile">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+            <div>
+              <label for="needMaterials">Include Boxes & Materials?</label>
+              <select id="needMaterials" name="needMaterials">
+                <option value="yes">Yes</option>
+                <option value="no">No (we provide)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="laborFields" style="display:none;">
+          <h2>Labor-Only Details</h2>
+          <div class="grid-3">
+            <div>
+              <label for="laborCrew">Crew Size</label>
+              <select id="laborCrew" name="laborCrew">
+                <option value="2">2 movers</option>
+                <option value="3">3 movers</option>
+                <option value="4">4 movers</option>
+              </select>
+            </div>
+            <div>
+              <label for="laborHours">Estimated Hours</label>
+              <input id="laborHours" name="laborHours" type="number" min="1" value="3"/>
+            </div>
+            <div>
+              <label for="laborStairs">Stairs</label>
+              <select id="laborStairs" name="laborStairs">
+                <option value="0">None / Elevator</option>
+                <option value="1">1 flight</option>
+                <option value="2">2+ flights</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="assemblyFields" style="display:none;">
+          <h2>Furniture Assembly</h2>
+          <div class="row">
+            <div>
+              <label for="itemCount"># of Items</label>
+              <input id="itemCount" name="itemCount" type="number" min="1" value="1"/>
+            </div>
+            <div>
+              <label for="itemComplexity">Complexity</label>
+              <select id="itemComplexity" name="itemComplexity">
+                <option value="basic">Basic (chairs, nightstands)</option>
+                <option value="standard">Standard (desks, dressers, beds)</option>
+                <option value="complex">Complex (sectionals, wall units)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div id="estimate" class="est">
+          <strong>Instant Estimate:</strong>
+          <div class="muted">Complete the fields above for a live price range.</div>
+        </div>
+        <div class="error" id="err">Please complete all required fields.</div>
+
+        <div class="divider"></div>
+        <div class="actions">
+          <button class="btn" type="button" onclick="calculate()">Calculate Estimate</button>
+          <button class="btn secondary" type="submit">Request Exact Quote</button>
+          <span class="badge">No obligation • Same‑day confirmation</span>
+        </div>
+
+        <!-- Placeholder for reCAPTCHA v3 or hCaptcha -->
+        <!-- <div class="g-recaptcha" data-sitekey="YOUR_SITE_KEY"></div> -->
+      </form>
+    </div>
+  </div>
+
+<script>
+  const rates = {
+    full: {
+      studio: { hourly:171, crew:2, hours:3 },
+      "1br":   { hourly:171, crew:2, hours:4 },
+      "2br":   { hourly:240, crew:3, hours:5 },
+      "3br":   { hourly:336, crew:4, hours:8 },
+      "4br":   { hourly:336, crew:4, hours:9 },
+      "5br":   { hourly:470, crew:5, hours:10 }
+    },
+    packingHourly: { low:60, high:80 },
+    packingFlat: { "1br":[250,500], "3br":[1000,1800], larger:[2300,2500] },
+    laborOnlyPerCrewHour: { low:70, high:120, avg:90 },
+    assemblyPerItem: {
+      basic:[55,85],
+      standard:[70,110],
+      complex:[110,180]
+    },
+    assemblyHourly:[50,70]
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  function toggleServiceFields(){
+    const t = $("serviceType").value;
+    $("fullFields").style.display = (t==="full")?"block":"none";
+    $("packingFields").style.display = (t==="packing")?"block":"none";
+    $("laborFields").style.display   = (t==="labor")?"block":"none";
+    $("assemblyFields").style.display= (t==="assembly")?"block":"none";
+  }
+
+  function fmt(n){ return n.toLocaleString(undefined,{ style:"currency", currency:"USD"}); }
+
+  function calcFull(){
+    const size = $("homeSize").value;
+    const base = rates.full[size];
+    let hours = base.hours;
+    const stairs = +$("stairs").value;
+    const distance = +$("distance").value || 0;
+    const fragile = $("fragile").value;
+    const includePacking = $("includePacking").value === "yes";
+
+    if(stairs===1) hours += 0.5;
+    if(stairs===2) hours += 1.0;
+    if(distance>20) hours += 0.5;
+    if(fragile==="some") hours += 0.5;
+    if(fragile==="many") hours += 1.0;
+
+    let low = base.hourly * (hours - 0.5);
+    let high = base.hourly * (hours + 0.5);
+
+    if(includePacking){
+      low += rates.packingHourly.low * Math.max(2, Math.floor(hours/2));
+      high += rates.packingHourly.high * Math.max(3, Math.ceil(hours/2));
+    }
+    return [Math.max(0, Math.round(low)), Math.max(0, Math.round(high))];
+  }
+
+  function calcPacking(){
+    const rooms = Math.max(1, +$("packingRooms").value||1);
+    const fragile = $("packingFragile").value==="yes";
+    const mats = $("needMaterials").value==="yes";
+    let hoursLow = rooms*1.5;
+    let hoursHigh = rooms*2.5;
+    if(fragile){ hoursLow+=0.5; hoursHigh+=1.0; }
+    let low = hoursLow * rates.packingHourly.low;
+    let high = hoursHigh * rates.packingHourly.high;
+    if(mats){ low += rooms*25; high += rooms*45; }
+    return [Math.round(low), Math.round(high)];
+  }
+
+  function calcLabor(){
+    const crew = +$("laborCrew").value;
+    const hours = Math.max(1, +$("laborHours").value||1);
+    const stairs = +$("laborStairs").value;
+    let lowRate = rates.laborOnlyPerCrewHour.low;
+    let highRate= rates.laborOnlyPerCrewHour.high;
+    lowRate *= (crew/2);
+    highRate*= (crew/2);
+    let hoursAdj = hours + (stairs===1?0.25: stairs===2?0.5:0);
+    const low = lowRate * hoursAdj;
+    const high = highRate * (hoursAdj + 0.25);
+    return [Math.round(low), Math.round(high)];
+  }
+
+  function calcAssembly(){
+    const count = Math.max(1, +$("itemCount").value||1);
+    const cx = $("itemComplexity").value;
+    const [lowPer, highPer] = rates.assemblyPerItem[cx];
+    return [count*lowPer, count*highPer].map(Math.round);
+  }
+
+  function calculate(){
+    const t = $("serviceType").value;
+    if(!t || !$("zip").value || !$("name").value || !$("email").value || !$("phone").value || !$("moveDate").value){
+      $("err").style.display="block";
+      return;
+    } else { $("err").style.display="none"; }
+
+    let range=[0,0]; let label="";
+    if(t==="full"){ range = calcFull(); label="Full-Service Move"; }
+    if(t==="packing"){ range = calcPacking(); label="Packing Only"; }
+    if(t==="labor"){ range = calcLabor(); label="Labor-Only"; }
+    if(t==="assembly"){ range = calcAssembly(); label="Furniture Assembly"; }
+
+    $("estimate").innerHTML = `
+      <strong>${label} — Instant Estimate:</strong>
+      <div style="font-size:1.2rem;margin:.3rem 0;"><b>${fmt(range[0])} – ${fmt(range[1])}</b></div>
+      <div class="muted">Final pricing may vary based on inventory, access, parking, and timing. Submit for an exact written quote.</div>
+    `;
+  }
+
+  async function submitQuote(e){
+    e.preventDefault();
+    // Check browser validity (show built-in messages if any)
+    const form = $("quoteForm");
+    if(!form.checkValidity()){
+      form.reportValidity();
+      return;
+    }
+    calculate();
+    const data = Object.fromEntries(new FormData(form).entries());
+    data.estimateHtml = $("estimate").innerText;
+    try{
+      await fetch("/api/quote", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(data)
+      });
+      alert("Thanks! Your request was sent. Our team will confirm details shortly.");
+    }catch(err){
+      console.warn("POST failed (demo mode). Replace /api/quote with your endpoint.", err);
+      alert("Quote calculated. This demo couldn't reach the server; please replace /api/quote with your backend URL.");
+    }
+  }
+</script>
+</body>
+</html>
